@@ -1,6 +1,6 @@
 {
   "name": "@vroskus/library-sentry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sentry",
   "author": "Vilius Roškus <vilius@regattas.eu>",
   "license": "MIT",
@@ -9,11 +9,6 @@
     "url": "git+https://github.com/vroskus/library-sentry.git"
   },
   "main": "dist/index.js",
-  "files": [
-    "dist/index.js",
-    "dist/node.js",
-    "dist/browser.js"
-  ],
   "scripts": {
     "postinstall": "npm run build",
     "build": "tsc",
@@ -24,7 +19,8 @@
   "dependencies": {
     "@sentry/browser": "7.38.0",
     "@sentry/node": "7.38.0",
-    "@vroskus/library-error": "1.0.0",
+    "@types/lodash": "4.14.192",
+    "@vroskus/library-error": "1.0.1",
     "lodash": "4.17.21",
     "uuid": "9.0.0"
   },
