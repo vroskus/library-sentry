@@ -56,6 +56,15 @@ type $Instance = {
   logOutput: $LogOutput | null;
 };
 
+type $Scope = {
+  addBreadcrumb: (arg0: {
+    data: Record<string, unknown>,
+    message: string,
+  }) => void,
+  setLevel: (arg0: string) => void,
+  setTag: (arg0: string, arg1: string) => void,
+};
+
 export type $ErrorLog = {
   readonly init: (
     config: $Config,
@@ -71,13 +80,11 @@ export type $ErrorLog = {
   readonly exception: (error: Error | $CustomError, levelOverride?: $ErrorLevel) => void;
 };
 
-type $Init = (instance: $Instance, config: $Config) => void;
-
-export const init: $Init = ({
+export const init = ({
   enabled,
   logOutput,
   Sentry,
-}, config) => {
+}: $Instance, config: $Config): void => {
   if (enabled) {
     Sentry.init(config);
   }
@@ -270,7 +277,7 @@ export const exception = <E extends ((Error | $CustomError | ResponseError) & { 
   }
 
   if (enabled) {
-    Sentry.withScope(async (scope: Record<string, unknown>) => {
+    Sentry.withScope(async (scope: $Scope) => {
       if (data) {
         scope.addBreadcrumb({
           data: preparedData,
@@ -285,7 +292,9 @@ export const exception = <E extends ((Error | $CustomError | ResponseError) & { 
         );
       }
 
-      scope.setLevel(level);
+      if (level) {
+        scope.setLevel(level);
+      }
 
       Sentry.captureException(error);
     });
