@@ -22,7 +22,7 @@ import {
 } from './utils';
 
 // Types
-export type ResponseError = {
+type $ResponseError = {
   message: string;
   name: string;
   config: {
@@ -210,7 +210,7 @@ export const request = ({
 };
 
 // eslint-disable-next-line complexity
-export const exception = <E extends ((Error | $CustomError | ResponseError) & { name: string })>({
+export const exception = <E extends ((Error | $CustomError | $ResponseError) & { name: string })>({
   enabled,
   logOutput,
   Sentry,
@@ -234,7 +234,7 @@ export const exception = <E extends ((Error | $CustomError | ResponseError) & { 
   const {
     config,
     response,
-  } = error as ResponseError;
+  } = error as $ResponseError;
 
   const {
     message,
