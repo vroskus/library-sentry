@@ -23,7 +23,7 @@ describe(
         it(
           'should successfully init',
           async () => {
-            const Sentry: any = await import('@sentry/browser');
+            const Sentry = await import('@sentry/browser');
 
             const ErrorLog = (await import('../src/browser')).default;
 
@@ -57,7 +57,7 @@ describe(
         it(
           'should successfully setup user',
           async () => {
-            const Sentry: any = await import('@sentry/browser');
+            const Sentry = await import('@sentry/browser');
             const ErrorLog = (await import('../src/browser')).default;
 
             const scopeMethods = {
@@ -88,7 +88,7 @@ describe(
         it(
           'should successfully add context',
           async () => {
-            const Sentry: any = await import('@sentry/browser');
+            const Sentry = await import('@sentry/browser');
             const ErrorLog = (await import('../src/browser')).default;
 
             const spies = {
@@ -124,7 +124,7 @@ describe(
         it(
           'should successfully set request id',
           async () => {
-            const Sentry: any = await import('@sentry/browser');
+            const Sentry = await import('@sentry/browser');
             const ErrorLog = (await import('../src/browser')).default;
 
             const scopeMethods = {
@@ -172,7 +172,7 @@ describe(
         it(
           'should successfully handle exception',
           async () => {
-            const Sentry: any = await import('@sentry/browser');
+            const Sentry = await import('@sentry/browser');
             const ErrorLog = (await import('../src/browser')).default;
 
             const spies = {
@@ -193,7 +193,7 @@ describe(
         it(
           'should successfully handle handled exception',
           async () => {
-            const Sentry: any = await import('@sentry/browser');
+            const Sentry = await import('@sentry/browser');
             const ErrorLog = (await import('../src/browser')).default;
 
             const scopeMethods = {

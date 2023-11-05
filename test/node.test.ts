@@ -23,7 +23,7 @@ describe(
         it(
           'should successfully init',
           async () => {
-            const Sentry: any = await import('@sentry/node');
+            const Sentry = await import('@sentry/node');
             const ErrorLog = (await import('../src/node')).default;
 
             const spies = {
@@ -56,7 +56,7 @@ describe(
         it(
           'should successfully setup user',
           async () => {
-            const Sentry: any = await import('@sentry/node');
+            const Sentry = await import('@sentry/node');
             const ErrorLog = (await import('../src/node')).default;
 
             const scopeMethods = {
@@ -87,7 +87,7 @@ describe(
         it(
           'should successfully add context',
           async () => {
-            const Sentry: any = await import('@sentry/node');
+            const Sentry = await import('@sentry/node');
             const ErrorLog = (await import('../src/node')).default;
 
             const spies = {
@@ -119,7 +119,7 @@ describe(
         it(
           'should successfully set request id',
           async () => {
-            const Sentry: any = await import('@sentry/node');
+            const Sentry = await import('@sentry/node');
             const ErrorLog = (await import('../src/node')).default;
 
             const scopeMethods = {
@@ -167,7 +167,7 @@ describe(
         it(
           'should successfully handle exception',
           async () => {
-            const Sentry: any = await import('@sentry/node');
+            const Sentry = await import('@sentry/node');
             const ErrorLog = (await import('../src/node')).default;
 
             const spies = {
@@ -188,7 +188,7 @@ describe(
         it(
           'should successfully handle handled exception',
           async () => {
-            const Sentry: any = await import('@sentry/node');
+            const Sentry = await import('@sentry/node');
             const ErrorLog = (await import('../src/node')).default;
 
             const scopeMethods = {

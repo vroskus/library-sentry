@@ -13,6 +13,9 @@ import {
 } from '@vroskus/library-error';
 
 // Helpers
+import type {
+  Hub,
+} from '@sentry/types';
 import _ from 'lodash';
 
 // Utils
@@ -22,6 +25,10 @@ import {
 } from './utils';
 
 // Types
+type $Sentry = Hub & {
+  init: (config: $Config) => void;
+};
+
 type $ResponseError = {
   message: string;
   name: string;
@@ -51,7 +58,7 @@ type $Config = {
 type $LogOutput = 'full' | 'error';
 
 type $Instance = {
-  Sentry: any;
+  Sentry: $Sentry;
   enabled: boolean;
   logOutput: $LogOutput | null;
 };
@@ -321,7 +328,7 @@ export const exception = <E extends ((Error | $CustomError | $ResponseError) & {
   }
 };
 
-export const createErrorLog = (Sentry: any): $ErrorLog => {
+export const createErrorLog = (Sentry): $ErrorLog => {
   const instance: $Instance = {
     enabled: true,
     // Sends data to sentry
