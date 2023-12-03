@@ -3,7 +3,7 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "requireConfigFile": false,
-    "project": ["tsconfig.eslint.json"]
+    "project": ["**/tsconfig.eslint.json"]
   },
   "extends": [
     "airbnb-base",
