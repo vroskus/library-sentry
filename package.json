@@ -1,6 +1,6 @@
 {
   "name": "@vroskus/library-sentry",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Sentry",
   "author": "Vilius Roškus <vilius@regattas.eu>",
   "license": "MIT",
