@@ -15,6 +15,7 @@ import {
 // Helpers
 import type {
   Hub,
+  Integration,
 } from '@sentry/types';
 import _ from 'lodash';
 
@@ -25,13 +26,21 @@ import {
 } from './utils';
 
 // Types
+type $Config = {
+  denyUrls?: Array<RegExp | string>;
+  dsn: string;
+  environment: string;
+  httpProxy?: string;
+  httpsProxy?: string;
+  integrations?: Array<Integration>;
+  release: string;
+};
+
 type $Sentry = Hub & {
   init: (config: $Config) => void;
 };
 
 type $ResponseError = {
-  message: string;
-  name: string;
   config: {
     baseURL: string;
     data: object;
@@ -39,27 +48,21 @@ type $ResponseError = {
     method: string;
     url: string;
   };
+  message: string;
+  name: string;
   response: {
-    status: number;
-    headers: Record<string, string>;
     data: object;
+    headers: Record<string, string>;
+    status: number;
   };
 };
 
-type $Config = {
-  dsn: string;
-  environment: string;
-  release: string;
-  httpProxy?: string;
-  httpsProxy?: string;
-  denyUrls?: Array<string | RegExp>;
-};
-
-type $LogOutput = 'full' | 'error';
+type $LogOutput = 'error' | 'full';
 
 type $Instance = {
   Sentry: $Sentry;
   enabled: boolean;
+  integrations: Array<Integration>;
   logOutput: $LogOutput | null;
 };
 
@@ -73,27 +76,36 @@ type $Scope = {
 };
 
 export type $ErrorLog = {
+  readonly context: (
+    message: string,
+    data?: Array<unknown> | Record<string, unknown> | null | string,
+  ) => void;
+  readonly exception: (error: $CustomError | Error, levelOverride?: $ErrorLevel) => void;
   readonly init: (
     config: $Config,
     enabledEnvironments?: Array<string>,
     enabledLogOutputEnvironments?: Record<string, $LogOutput>,
   ) => void;
-  readonly setUser: (params: object) => void;
-  readonly context: (
-    message: string,
-    data?: Array<unknown> | Record<string, unknown> | string | null,
-  ) => void;
   readonly request: (req: $Request) => void;
-  readonly exception: (error: Error | $CustomError, levelOverride?: $ErrorLevel) => void;
+  readonly setUser: (params: object) => void;
 };
 
 export const init = ({
-  enabled,
-  logOutput,
   Sentry,
+  enabled,
+  integrations,
+  logOutput,
 }: $Instance, config: $Config): void => {
   if (enabled) {
-    Sentry.init(config);
+    const preparedConfig = {
+      ...config,
+      integrations: [
+        ...integrations,
+        ...(config.integrations || []),
+      ],
+    };
+
+    Sentry.init(preparedConfig);
   }
 
   if (logOutput !== null) {
@@ -103,9 +115,9 @@ export const init = ({
 };
 
 export const setUser = ({
+  Sentry,
   enabled,
   logOutput,
-  Sentry,
 }: $Instance, params: unknown): void => {
   if (enabled) {
     Sentry.setUser(params);
@@ -122,12 +134,12 @@ export const setUser = ({
 
 export const context = (
   {
+    Sentry,
     enabled,
     logOutput,
-    Sentry,
   }: $Instance,
   message: string,
-  data?: Array<unknown> | Record<string, unknown> | string | null,
+  data?: Array<unknown> | Record<string, unknown> | null | string,
 ): void => {
   const preparedData = prapareContextData(data);
 
@@ -149,9 +161,9 @@ export const context = (
 };
 
 export const request = ({
+  Sentry,
   enabled,
   logOutput,
-  Sentry,
 }: $Instance, req: $Request): void => {
   const requestId: string | void = _.get(
     req,
@@ -217,10 +229,10 @@ export const request = ({
 };
 
 // eslint-disable-next-line complexity
-export const exception = <E extends ((Error | $CustomError | $ResponseError) & { name: string })>({
+export const exception = <E extends (($CustomError | $ResponseError | Error) & { name: string })>({
+  Sentry,
   enabled,
   logOutput,
-  Sentry,
 }: $Instance, error: E, levelOverride: $ErrorLevel | void): void => {
   let data: Record<string, unknown> | void = _.get(
     error as $CustomError,
@@ -273,7 +285,6 @@ export const exception = <E extends ((Error | $CustomError | $ResponseError) & {
       message,
     );
 
-    // eslint-disable-next-line no-param-reassign
     name = `${key}: ${foundMessage}`;
   }
 
@@ -328,13 +339,14 @@ export const exception = <E extends ((Error | $CustomError | $ResponseError) & {
   }
 };
 
-export const createErrorLog = (Sentry): $ErrorLog => {
+export const createErrorLog = (Sentry, integrations: Array<Integration>): $ErrorLog => {
   const instance: $Instance = {
-    enabled: true,
-    // Sends data to sentry
-    logOutput: null,
-    // Sends data to console
     Sentry,
+    // Sends data to sentry
+    enabled: true,
+    integrations,
+    // Sends data to console
+    logOutput: null,
   };
 
   const ErrorLog: $ErrorLog = {

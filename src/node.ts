@@ -1,8 +1,8 @@
 // Global Types
 import type {
+  RequestHandler as $Middleware,
   NextFunction as $Next,
   Request as $Request,
-  RequestHandler as $Middleware,
   Response as $Response,
 } from 'express';
 
@@ -13,6 +13,9 @@ import {
 } from 'uuid';
 
 import * as Sentry from '@sentry/node';
+import {
+  Integrations,
+} from '@sentry/tracing';
 
 import {
   createErrorLog,
@@ -21,13 +24,19 @@ import {
   throwError as throwErrorHelper,
 } from './utils';
 
+// Types
 import type {
   $ErrorLog,
 } from './common';
 
 export const throwError = throwErrorHelper;
 
-const ErrorLog: $ErrorLog = createErrorLog(Sentry);
+const ErrorLog: $ErrorLog = createErrorLog(
+  Sentry,
+  [
+    new Integrations.Express(),
+  ],
+);
 
 export const requestIdMiddleware = (): $Middleware => (
   req: $Request,
