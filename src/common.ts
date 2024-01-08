@@ -3,7 +3,6 @@ import type {
   Request as $Request,
 } from 'express';
 import type {
-  ClientOptions,
   Hub,
   Integration,
   Scope,
@@ -28,7 +27,16 @@ import {
 } from './utils';
 
 // Types
-type $Config = ClientOptions;
+type $Config = {
+  denyUrls?: Array<RegExp | string>;
+  dsn: string;
+  enableTracing?: boolean,
+  environment: string;
+  httpProxy?: string;
+  httpsProxy?: string;
+  integrations?: Array<Integration>;
+  release: string;
+};
 
 type $Sentry = Hub & {
   init: (config: $Config) => void;
