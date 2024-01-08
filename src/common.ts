@@ -3,6 +3,12 @@ import type {
   Request as $Request,
 } from 'express';
 import type {
+  ClientOptions,
+  Hub,
+  Integration,
+  Scope,
+} from '@sentry/types';
+import type {
   $CustomError,
   $ErrorLevel,
 } from '@vroskus/library-error';
@@ -13,10 +19,6 @@ import {
 } from '@vroskus/library-error';
 
 // Helpers
-import type {
-  Hub,
-  Integration,
-} from '@sentry/types';
 import _ from 'lodash';
 
 // Utils
@@ -26,15 +28,7 @@ import {
 } from './utils';
 
 // Types
-type $Config = {
-  denyUrls?: Array<RegExp | string>;
-  dsn: string;
-  environment: string;
-  httpProxy?: string;
-  httpsProxy?: string;
-  integrations?: Array<Integration>;
-  release: string;
-};
+type $Config = ClientOptions;
 
 type $Sentry = Hub & {
   init: (config: $Config) => void;
@@ -66,15 +60,6 @@ type $Instance = {
   logOutput: $LogOutput | null;
 };
 
-type $Scope = {
-  addBreadcrumb: (arg0: {
-    data: Record<string, unknown>,
-    message: string,
-  }) => void,
-  setLevel: (arg0: string) => void,
-  setTag: (arg0: string, arg1: string) => void,
-};
-
 export type $ErrorLog = {
   readonly context: (
     message: string,
@@ -98,6 +83,7 @@ export const init = ({
 }: $Instance, config: $Config): void => {
   if (enabled) {
     const preparedConfig = {
+      enableTracing: true,
       ...config,
       integrations: [
         ...integrations,
@@ -295,7 +281,7 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
   }
 
   if (enabled) {
-    Sentry.withScope(async (scope: $Scope) => {
+    Sentry.withScope(async (scope: Scope) => {
       if (data) {
         scope.addBreadcrumb({
           data: preparedData,
