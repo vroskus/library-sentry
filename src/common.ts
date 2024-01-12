@@ -6,6 +6,7 @@ import type {
   Hub,
   Integration,
   Scope,
+  Transaction,
 } from '@sentry/types';
 import type {
   $CustomError,
@@ -74,13 +75,18 @@ export type $ErrorLog = {
     data?: Array<unknown> | Record<string, unknown> | null | string,
   ) => void;
   readonly exception: (error: $CustomError | Error, levelOverride?: $ErrorLevel) => void;
+  readonly getTransaction: (params: {
+    description?: string,
+    name: string,
+    op: string,
+  }) => Transaction,
   readonly init: (
     config: $Config,
     enabledEnvironments?: Array<string>,
     enabledLogOutputEnvironments?: Record<string, $LogOutput>,
   ) => void;
   readonly request: (req: $Request) => void;
-  readonly setUser: (params: object) => void;
+  readonly setUser: (params: unknown) => void;
 };
 
 export const init = ({
@@ -333,6 +339,28 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
   }
 };
 
+const getTransaction = (
+  {
+    Sentry,
+    logOutput,
+  }: $Instance,
+  params: {
+    description?: string,
+    name: string,
+    op: string,
+  },
+) => {
+  if (logOutput !== null) {
+    // eslint-disable-next-line no-console
+    console.info(
+      'ErrorLog transaction: ',
+      params,
+    );
+  }
+
+  return Sentry.startTransaction(params);
+};
+
 export const createErrorLog = (Sentry, integrations: Array<Integration>): $ErrorLog => {
   const instance: $Instance = {
     Sentry,
@@ -353,6 +381,10 @@ export const createErrorLog = (Sentry, integrations: Array<Integration>): $Error
       instance,
       error,
       levelOverride,
+    ),
+    getTransaction: (params) => getTransaction(
+      instance,
+      params,
     ),
     init: (config, enabledEnvironments, enabledLogOutputEnvironments) => {
       instance.enabled = isEnabledEnvironment(
