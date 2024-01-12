@@ -85,7 +85,7 @@ export type $ErrorLog = {
     enabledEnvironments?: Array<string>,
     enabledLogOutputEnvironments?: Record<string, $LogOutput>,
   ) => void;
-  readonly request: (req: $Request) => void;
+  readonly request: (req: $Request) => Transaction;
   readonly setUser: (params: unknown) => void;
 };
 
@@ -164,7 +164,7 @@ export const request = ({
   Sentry,
   enabled,
   logOutput,
-}: $Instance, req: $Request): void => {
+}: $Instance, req: $Request): Transaction => {
   const requestId: string | void = _.get(
     req,
     'id',
@@ -175,14 +175,19 @@ export const request = ({
     'user',
   );
 
+  const {
+    method,
+    originalUrl,
+  } = req;
+
   if (enabled) {
     Sentry.setExtra(
       'Method',
-      req.method,
+      method,
     );
     Sentry.setExtra(
       'Route',
-      req.originalUrl,
+      originalUrl,
     );
     Sentry.setExtra(
       'Body',
@@ -226,6 +231,13 @@ export const request = ({
       },
     );
   }
+
+  const params = {
+    name: `${method} ${originalUrl}`,
+    op: 'http.request',
+  };
+
+  return Sentry.startTransaction(params);
 };
 
 // eslint-disable-next-line complexity
