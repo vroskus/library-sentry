@@ -86,6 +86,7 @@ export type $ErrorLog = {
     enabledLogOutputEnvironments?: Record<string, $LogOutput>,
   ) => void;
   readonly request: (req: $Request) => Transaction;
+  readonly setTransactionData: (tr: Transaction, params: Record<string, unknown>) => void;
   readonly setUser: (params: unknown) => void;
 };
 
@@ -419,6 +420,18 @@ export const createErrorLog = (Sentry, integrations: Array<Integration>): $Error
       instance,
       req,
     ),
+    setTransactionData: (tr, params) => {
+      _.forEach(
+        params,
+        (
+          value: unknown,
+          key: string,
+        ) => tr.setData(
+          key,
+          value,
+        ),
+      );
+    },
     setUser: (params) => setUser(
       instance,
       params,
