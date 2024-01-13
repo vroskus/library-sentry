@@ -74,20 +74,36 @@ export type $ErrorLog = {
     message: string,
     data?: Array<unknown> | Record<string, unknown> | null | string,
   ) => void;
-  readonly exception: (error: $CustomError | Error, levelOverride?: $ErrorLevel) => void;
-  readonly getTransaction: (params: {
-    description?: string,
-    name: string,
-    op: string,
-  }) => Transaction,
+  readonly exception: (
+    error: $CustomError | Error,
+    levelOverride?: $ErrorLevel,
+  ) => void;
+  readonly finishTransaction: (
+    tr: Transaction,
+    params?: Record<string, unknown>,
+  ) => void;
   readonly init: (
     config: $Config,
     enabledEnvironments?: Array<string>,
     enabledLogOutputEnvironments?: Record<string, $LogOutput>,
   ) => void;
-  readonly request: (req: $Request) => Transaction;
-  readonly setTransactionData: (tr: Transaction, params: Record<string, unknown>) => void;
-  readonly setUser: (params: unknown) => void;
+  readonly request: (
+    req: $Request,
+  ) => Transaction;
+  readonly setTransactionData: (
+    tr: Transaction,
+    params: Record<string, unknown>,
+  ) => void;
+  readonly setUser: (
+    params: unknown,
+  ) => void;
+  readonly transaction: (
+    params: {
+      description?: string,
+      name: string,
+      op: string,
+    },
+  ) => Transaction,
 };
 
 export const init = ({
@@ -352,7 +368,7 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
   }
 };
 
-const getTransaction = (
+const transaction = (
   {
     Sentry,
     logOutput,
@@ -372,6 +388,19 @@ const getTransaction = (
   }
 
   return Sentry.startTransaction(params);
+};
+
+const setTransactionData = (tr, params) => {
+  _.forEach(
+    params,
+    (
+      value: unknown,
+      key: string,
+    ) => tr.setData(
+      key,
+      value,
+    ),
+  );
 };
 
 export const createErrorLog = (Sentry, integrations: Array<Integration>): $ErrorLog => {
@@ -395,10 +424,16 @@ export const createErrorLog = (Sentry, integrations: Array<Integration>): $Error
       error,
       levelOverride,
     ),
-    getTransaction: (params) => getTransaction(
-      instance,
-      params,
-    ),
+    finishTransaction: (tr, data) => {
+      if (data) {
+        setTransactionData(
+          tr,
+          data,
+        );
+      }
+
+      tr.finish();
+    },
     init: (config, enabledEnvironments, enabledLogOutputEnvironments) => {
       instance.enabled = isEnabledEnvironment(
         config.environment,
@@ -420,19 +455,15 @@ export const createErrorLog = (Sentry, integrations: Array<Integration>): $Error
       instance,
       req,
     ),
-    setTransactionData: (tr, params) => {
-      _.forEach(
-        params,
-        (
-          value: unknown,
-          key: string,
-        ) => tr.setData(
-          key,
-          value,
-        ),
-      );
-    },
+    setTransactionData: (tr, data) => setTransactionData(
+      tr,
+      data,
+    ),
     setUser: (params) => setUser(
+      instance,
+      params,
+    ),
+    transaction: (params) => transaction(
       instance,
       params,
     ),
