@@ -15,7 +15,7 @@ import type {
 
 // Global Enums
 import {
-  baseErrorKey,
+  BaseErrorKey,
 } from '@vroskus/library-error';
 
 // Helpers
@@ -305,7 +305,7 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
     key = _.get(
       response,
       'data.key',
-      baseErrorKey.responseError,
+      BaseErrorKey.responseError,
     );
 
     const foundMessage: string = _.get(
