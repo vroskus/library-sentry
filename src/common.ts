@@ -46,7 +46,7 @@ type $Sentry = Hub & {
 type $ResponseError = {
   config: {
     baseURL: string;
-    data: object;
+    data?: Record<string, unknown>;
     headers: Record<string, string>;
     method: string;
     url: string;
@@ -54,7 +54,7 @@ type $ResponseError = {
   message: string;
   name: string;
   response: {
-    data: object;
+    data?: Record<string, unknown>;
     headers: Record<string, string>;
     status: number;
   };
@@ -95,7 +95,7 @@ export type $ErrorLog = {
     params: Record<string, unknown>,
   ) => void;
   readonly setUser: (
-    params: unknown,
+    params: Record<string, string>,
   ) => void;
   readonly transaction: (
     params: {
@@ -135,7 +135,7 @@ export const setUser = ({
   Sentry,
   enabled,
   logOutput,
-}: $Instance, params: unknown): void => {
+}: $Instance, params: Record<string, string>): void => {
   if (enabled) {
     Sentry.setUser(params);
   }
@@ -182,12 +182,12 @@ export const request = ({
   enabled,
   logOutput,
 }: $Instance, req: $Request): Transaction => {
-  const requestId: string | void = _.get(
+  const requestId: string | undefined = _.get(
     req,
     'id',
   );
 
-  const user: Record<string, unknown> | void = _.get(
+  const user: Record<string, unknown> | undefined = _.get(
     req,
     'user',
   );
@@ -263,12 +263,12 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
   enabled,
   logOutput,
 }: $Instance, error: E, levelOverride: $ErrorLevel | void): void => {
-  let data: Record<string, unknown> | void = _.get(
+  let data = _.get(
     error as $CustomError,
     'data',
-  );
+  ) as Record<string, unknown> | undefined;
 
-  let key: string | void = _.get(
+  let key: string | undefined = _.get(
     error as $CustomError,
     'key',
   );
@@ -302,17 +302,18 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
       status: response.status,
     };
 
-    key = _.get(
+    const dataKey = _.get(
       response,
       'data.key',
-      BaseErrorKey.responseError,
-    );
+    ) as string | undefined;
 
-    const foundMessage: string = _.get(
+    key = dataKey || BaseErrorKey.responseError;
+
+    const foundMessage = _.get(
       response,
       'data.message',
       message,
-    );
+    ) as string;
 
     name = `${key}: ${foundMessage}`;
   }

@@ -26,7 +26,7 @@ export const throwError: $ThrowError = (error) => {
 };
 
 const prepareContextDataValue = (
-  value: Array<unknown> | Record<string, unknown> | string,
+  value: unknown,
 ): string => {
   if (_.isObject(value) || _.isArray(value)) {
     return JSON.stringify(
@@ -36,7 +36,15 @@ const prepareContextDataValue = (
     ) as string;
   }
 
-  return value;
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    return String(value);
+  }
+
+  return 'Invalid value';
 };
 
 type $PrapareContextData = (
@@ -57,7 +65,7 @@ export const prapareContextData: $PrapareContextData = (data) => {
     } else {
       _.forEach(
         data,
-        (value: Array<unknown> | Record<string, unknown>, key: string) => {
+        (value: unknown, key: string) => {
           _.set(
             contextData,
             key,
