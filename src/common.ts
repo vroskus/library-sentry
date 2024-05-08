@@ -39,9 +39,9 @@ type $Config = {
   release: string;
 };
 
-type $Sentry = Hub & {
+type $Sentry = {
   init: (config: $Config) => void;
-};
+} & Hub;
 
 type $ResponseError = {
   config: {
