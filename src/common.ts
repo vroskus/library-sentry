@@ -63,16 +63,16 @@ type $ResponseError = {
 type $LogOutput = 'error' | 'full';
 
 type $Instance = {
-  Sentry: $Sentry;
   enabled: boolean;
   integrations: Array<Integration>;
   logOutput: $LogOutput | null;
+  Sentry: $Sentry;
 };
 
 export type $ErrorLog = {
   readonly context: (
     message: string,
-    data?: Array<unknown> | Record<string, unknown> | null | string,
+    data?: Array<unknown> | null | Record<string, unknown> | string,
   ) => void;
   readonly exception: (
     error: $CustomError | Error,
@@ -107,10 +107,10 @@ export type $ErrorLog = {
 };
 
 export const init = ({
-  Sentry,
   enabled,
   integrations,
   logOutput,
+  Sentry,
 }: $Instance, config: $Config): void => {
   if (enabled) {
     const preparedConfig = {
@@ -132,9 +132,9 @@ export const init = ({
 };
 
 export const setUser = ({
-  Sentry,
   enabled,
   logOutput,
+  Sentry,
 }: $Instance, params: Record<string, string>): void => {
   if (enabled) {
     Sentry.setUser(params);
@@ -151,12 +151,12 @@ export const setUser = ({
 
 export const context = (
   {
-    Sentry,
     enabled,
     logOutput,
+    Sentry,
   }: $Instance,
   message: string,
-  data?: Array<unknown> | Record<string, unknown> | null | string,
+  data?: Array<unknown> | null | Record<string, unknown> | string,
 ): void => {
   const preparedData = prapareContextData(data);
 
@@ -178,9 +178,9 @@ export const context = (
 };
 
 export const request = ({
-  Sentry,
   enabled,
   logOutput,
+  Sentry,
 }: $Instance, req: $Request): Transaction => {
   const requestId: string | undefined = _.get(
     req,
@@ -259,9 +259,9 @@ export const request = ({
 
 // eslint-disable-next-line complexity
 export const exception = <E extends (($CustomError | $ResponseError | Error) & { name: string })>({
-  Sentry,
   enabled,
   logOutput,
+  Sentry,
 }: $Instance, error: E, levelOverride: $ErrorLevel | void): void => {
   let data = _.get(
     error as $CustomError,
@@ -371,8 +371,8 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
 
 const transaction = (
   {
-    Sentry,
     logOutput,
+    Sentry,
   }: $Instance,
   params: {
     description?: string,
@@ -406,12 +406,12 @@ const setTransactionData = (tr, params) => {
 
 export const createErrorLog = (Sentry, integrations: Array<Integration>): $ErrorLog => {
   const instance: $Instance = {
-    Sentry,
     // Sends data to sentry
     enabled: true,
     integrations,
     // Sends data to console
     logOutput: null,
+    Sentry,
   };
 
   const ErrorLog: $ErrorLog = {
@@ -441,10 +441,11 @@ export const createErrorLog = (Sentry, integrations: Array<Integration>): $Error
         enabledEnvironments,
       );
 
-      if (enabledLogOutputEnvironments && typeof enabledLogOutputEnvironments === 'object') {
-        if (config.environment in enabledLogOutputEnvironments) {
-          instance.logOutput = enabledLogOutputEnvironments[config.environment];
-        }
+      if (enabledLogOutputEnvironments
+        && typeof enabledLogOutputEnvironments === 'object'
+        && config.environment in enabledLogOutputEnvironments
+      ) {
+        instance.logOutput = enabledLogOutputEnvironments[config.environment];
       }
 
       init(

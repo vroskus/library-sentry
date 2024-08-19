@@ -1,6 +1,6 @@
 import {
-  CustomError,
   baseErrorKey,
+  CustomError,
 } from '@vroskus/library-error';
 import {
   isEnabledEnvironment,

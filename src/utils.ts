@@ -48,7 +48,7 @@ const prepareContextDataValue = (
 };
 
 type $PrapareContextData = (
-  data?: Array<unknown> | Record<string, unknown> | null | string,
+  data?: Array<unknown> | null | Record<string, unknown> | string,
 ) => $ContextData;
 
 export const prapareContextData: $PrapareContextData = (data) => {
