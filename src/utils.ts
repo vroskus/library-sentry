@@ -9,9 +9,12 @@ import _ from 'lodash';
 // Types
 type $ContextData = Record<string, string>;
 
-type $IsEnabledEnvironment = (environment: string, environments?: Array<string>) => boolean;
+const jsonIdent: number = 2;
 
-export const isEnabledEnvironment: $IsEnabledEnvironment = (environment, environments) => {
+export const isEnabledEnvironment = (
+  environment: string,
+  environments?: Array<string>,
+): boolean => {
   if (!environments) {
     return true;
   }
@@ -19,9 +22,9 @@ export const isEnabledEnvironment: $IsEnabledEnvironment = (environment, environ
   return environments.includes(environment);
 };
 
-type $ThrowError = (error: $CustomError) => void;
-
-export const throwError: $ThrowError = (error) => {
+export const throwError = (
+  error: $CustomError,
+): void => {
   throw error;
 };
 
@@ -32,7 +35,7 @@ const prepareContextDataValue = (
     return JSON.stringify(
       value,
       undefined,
-      2,
+      jsonIdent,
     ) as string;
   }
 
@@ -47,11 +50,9 @@ const prepareContextDataValue = (
   return 'Invalid value';
 };
 
-type $PrapareContextData = (
+export const prepareContextData = (
   data?: Array<unknown> | null | Record<string, unknown> | string,
-) => $ContextData;
-
-export const prapareContextData: $PrapareContextData = (data) => {
+): $ContextData => {
   const contextData = {
   };
 

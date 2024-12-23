@@ -14,8 +14,8 @@ import {
 
 import * as Sentry from '@sentry/node';
 import {
-  Integrations,
-} from '@sentry/tracing';
+  nodeProfilingIntegration,
+} from '@sentry/profiling-node';
 
 import {
   createErrorLog,
@@ -34,7 +34,7 @@ export const throwError = throwErrorHelper;
 const ErrorLog: $ErrorLog = createErrorLog(
   Sentry,
   [
-    new Integrations.Express(),
+    nodeProfilingIntegration(),
   ],
 );
 

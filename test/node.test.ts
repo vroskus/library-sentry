@@ -5,6 +5,8 @@ import {
   CustomError,
 } from '@vroskus/library-error';
 
+const jsonIdent: number = 2;
+
 describe(
   'index',
   () => {
@@ -236,7 +238,7 @@ describe(
                 context: JSON.stringify(
                   error.data,
                   undefined,
-                  2,
+                  jsonIdent,
                 ),
               },
               message: 'Error data',

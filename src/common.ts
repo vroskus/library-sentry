@@ -6,8 +6,7 @@ import type {
   Hub,
   Integration,
   Scope,
-  Transaction,
-} from '@sentry/types';
+} from '@sentry/core';
 import type {
   $CustomError,
   $ErrorLevel,
@@ -24,14 +23,15 @@ import _ from 'lodash';
 // Utils
 import {
   isEnabledEnvironment,
-  prapareContextData,
+  prepareContextData,
 } from './utils';
 
 // Types
+/* eslint-disable perfectionist/sort-modules */
 type $Config = {
   denyUrls?: Array<RegExp | string>;
   dsn: string;
-  enableTracing?: boolean,
+  enableTracing?: boolean;
   environment: string;
   httpProxy?: string;
   httpsProxy?: string;
@@ -39,9 +39,18 @@ type $Config = {
   release: string;
 };
 
-type $Sentry = {
+type $LogOutput = 'error' | 'full';
+
+type $Sentry = Hub & {
   init: (config: $Config) => void;
-} & Hub;
+};
+
+type $Instance = {
+  enabled: boolean;
+  integrations: Array<Integration>;
+  logOutput: $LogOutput | null;
+  Sentry: $Sentry;
+};
 
 type $ResponseError = {
   config: {
@@ -60,15 +69,7 @@ type $ResponseError = {
   };
 };
 
-type $LogOutput = 'error' | 'full';
-
-type $Instance = {
-  enabled: boolean;
-  integrations: Array<Integration>;
-  logOutput: $LogOutput | null;
-  Sentry: $Sentry;
-};
-
+//
 export type $ErrorLog = {
   readonly context: (
     message: string,
@@ -78,10 +79,6 @@ export type $ErrorLog = {
     error: $CustomError | Error,
     levelOverride?: $ErrorLevel,
   ) => void;
-  readonly finishTransaction: (
-    tr: Transaction,
-    params?: Record<string, unknown>,
-  ) => void;
   readonly init: (
     config: $Config,
     enabledEnvironments?: Array<string>,
@@ -89,22 +86,13 @@ export type $ErrorLog = {
   ) => void;
   readonly request: (
     req: $Request,
-  ) => Transaction;
-  readonly setTransactionData: (
-    tr: Transaction,
-    params: Record<string, unknown>,
   ) => void;
   readonly setUser: (
     params: Record<string, string>,
   ) => void;
-  readonly transaction: (
-    params: {
-      description?: string,
-      name: string,
-      op: string,
-    },
-  ) => Transaction,
 };
+
+const jsonIdent: number = 2;
 
 export const init = ({
   enabled,
@@ -158,7 +146,7 @@ export const context = (
   message: string,
   data?: Array<unknown> | null | Record<string, unknown> | string,
 ): void => {
-  const preparedData = prapareContextData(data);
+  const preparedData = prepareContextData(data);
 
   if (enabled) {
     Sentry.addBreadcrumb({
@@ -181,7 +169,7 @@ export const request = ({
   enabled,
   logOutput,
   Sentry,
-}: $Instance, req: $Request): Transaction => {
+}: $Instance, req: $Request): void => {
   const requestId: string | undefined = _.get(
     req,
     'id',
@@ -211,7 +199,7 @@ export const request = ({
       JSON.stringify(
         req.body,
         undefined,
-        2,
+        jsonIdent,
       ),
     );
     Sentry.setExtra(
@@ -219,7 +207,7 @@ export const request = ({
       JSON.stringify(
         req.params,
         undefined,
-        2,
+        jsonIdent,
       ),
     );
 
@@ -248,13 +236,6 @@ export const request = ({
       },
     );
   }
-
-  const params = {
-    name: `${method} ${originalUrl}`,
-    op: 'http.request',
-  };
-
-  return Sentry.startTransaction(params);
 };
 
 // eslint-disable-next-line complexity
@@ -321,7 +302,7 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
   let preparedData;
 
   if (data) {
-    preparedData = prapareContextData(data);
+    preparedData = prepareContextData(data);
   }
 
   if (enabled) {
@@ -349,7 +330,6 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
   }
 
   if (logOutput !== null) {
-    // eslint-disable-next-line no-console
     console.error(
       'ErrorLog error context: ',
       {
@@ -361,7 +341,6 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
       },
     );
 
-    // eslint-disable-next-line no-console
     console.error(
       'ErrorLog error: ',
       error,
@@ -369,42 +348,10 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
   }
 };
 
-const transaction = (
-  {
-    logOutput,
-    Sentry,
-  }: $Instance,
-  params: {
-    description?: string,
-    name: string,
-    op: string,
-  },
-) => {
-  if (logOutput !== null) {
-    // eslint-disable-next-line no-console
-    console.info(
-      'ErrorLog transaction: ',
-      params,
-    );
-  }
-
-  return Sentry.startTransaction(params);
-};
-
-const setTransactionData = (tr, params) => {
-  _.forEach(
-    params,
-    (
-      value: unknown,
-      key: string,
-    ) => tr.setData(
-      key,
-      value,
-    ),
-  );
-};
-
-export const createErrorLog = (Sentry, integrations: Array<Integration>): $ErrorLog => {
+export const createErrorLog = (
+  Sentry,
+  integrations: Array<Integration>,
+): $ErrorLog => {
   const instance: $Instance = {
     // Sends data to sentry
     enabled: true,
@@ -425,16 +372,6 @@ export const createErrorLog = (Sentry, integrations: Array<Integration>): $Error
       error,
       levelOverride,
     ),
-    finishTransaction: (tr, data) => {
-      if (data) {
-        setTransactionData(
-          tr,
-          data,
-        );
-      }
-
-      tr.finish();
-    },
     init: (config, enabledEnvironments, enabledLogOutputEnvironments) => {
       instance.enabled = isEnabledEnvironment(
         config.environment,
@@ -457,15 +394,7 @@ export const createErrorLog = (Sentry, integrations: Array<Integration>): $Error
       instance,
       req,
     ),
-    setTransactionData: (tr, data) => setTransactionData(
-      tr,
-      data,
-    ),
     setUser: (params) => setUser(
-      instance,
-      params,
-    ),
-    transaction: (params) => transaction(
       instance,
       params,
     ),
