@@ -22,7 +22,7 @@
     "@sentry/browser": "^8.47.0",
     "@sentry/node": "^8.47.0",
     "@sentry/profiling-node": "^8.47.0",
-    "@vroskus/library-error": "^1.0.30",
+    "@vroskus/library-error": "^1.0.32",
     "lodash": "^4.17.21",
     "uuid": "^11.0.3"
   },
