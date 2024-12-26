@@ -27,7 +27,7 @@ import {
 } from './utils';
 
 // Types
-/* eslint-disable perfectionist/sort-modules */
+
 type $Config = {
   denyUrls?: Array<RegExp | string>;
   dsn: string;
