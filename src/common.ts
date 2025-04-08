@@ -3,7 +3,6 @@ import type {
   Request as $Request,
 } from 'express';
 import type {
-  Hub,
   Integration,
   Scope,
 } from '@sentry/core';
@@ -41,7 +40,7 @@ type $Config = {
 
 type $LogOutput = 'error' | 'full';
 
-type $Sentry = Hub & {
+type $Sentry = Scope & {
   init: (config: $Config) => void;
 };
 
@@ -306,27 +305,25 @@ export const exception = <E extends (($CustomError | $ResponseError | Error) & {
   }
 
   if (enabled) {
-    Sentry.withScope(async (scope: Scope) => {
-      if (data) {
-        scope.addBreadcrumb({
-          data: preparedData,
-          message: 'Error data',
-        });
-      }
+    if (data) {
+      Sentry.addBreadcrumb({
+        data: preparedData,
+        message: 'Error data',
+      });
+    }
 
-      if (key) {
-        scope.setTag(
-          'error.key',
-          key,
-        );
-      }
+    if (key) {
+      Sentry.setTag(
+        'error.key',
+        key,
+      );
+    }
 
-      if (level) {
-        scope.setLevel(level);
-      }
+    if (level) {
+      Sentry.setLevel(level);
+    }
 
-      Sentry.captureException(error);
-    });
+    Sentry.captureException(error);
   }
 
   if (logOutput !== null) {
