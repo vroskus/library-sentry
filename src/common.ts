@@ -237,11 +237,11 @@ export const request = ({
   }
 };
 
-// eslint-disable-next-line complexity
 export const exception = <E extends (($CustomError | $ResponseError | Error) & { name: string })>({
   enabled,
   logOutput,
   Sentry,
+// eslint-disable-next-line complexity
 }: $Instance, error: E, levelOverride: $ErrorLevel | void): void => {
   let data = _.get(
     error as $CustomError,
