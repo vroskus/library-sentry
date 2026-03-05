@@ -7,7 +7,6 @@ import type {
   Scope,
 } from '@sentry/core';
 import type {
-  $CustomError,
   $ErrorLevel,
 } from '@vroskus/library-error';
 
@@ -75,7 +74,7 @@ export type $ErrorLog = {
     data?: Array<unknown> | null | Record<string, unknown> | string,
   ) => void;
   readonly exception: (
-    error: $CustomError | Error,
+    error: unknown,
     levelOverride?: $ErrorLevel,
   ) => void;
   readonly init: (
@@ -237,24 +236,31 @@ export const request = ({
   }
 };
 
-export const exception = <E extends (($CustomError | $ResponseError | Error) & { name: string })>({
+export const exception = ({
   enabled,
   logOutput,
   Sentry,
 // eslint-disable-next-line complexity
-}: $Instance, error: E, levelOverride: $ErrorLevel | void): void => {
-  let data = _.get(
-    error as $CustomError,
+}: $Instance, error: unknown, levelOverride: $ErrorLevel | void): void => {
+  if (!error && logOutput !== null) {
+    console.error(
+      'ErrorLog error: ',
+      error,
+    );
+  }
+
+  let data: Record<string, unknown> | undefined = _.get(
+    error,
     'data',
-  ) as Record<string, unknown> | undefined;
+  );
 
   let key: string | undefined = _.get(
-    error as $CustomError,
+    error,
     'key',
   );
 
   const level: $ErrorLevel | void = levelOverride || _.get(
-    error as $CustomError,
+    error,
     'level',
     'error',
   );
