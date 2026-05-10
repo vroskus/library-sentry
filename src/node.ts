@@ -7,7 +7,6 @@ import type {
 } from 'express';
 
 // Helpers
-import _ from 'lodash';
 import {
   v4 as uuidv4,
 } from 'uuid';
@@ -44,18 +43,21 @@ export const requestIdMiddleware = (): $Middleware => (
   next: $Next,
 ) => {
   const headerName = 'X-Request-Id';
-  const oldValue: string | void = req.get(headerName);
-  const id: string = oldValue === undefined ? uuidv4() : oldValue;
+  const oldValue: string | undefined = req.get(headerName);
+  const id: string = typeof oldValue !== 'undefined' ? oldValue : uuidv4();
 
   res.set(
     headerName,
     id,
   );
 
-  _.set(
+  Object.defineProperty(
     req,
     'id',
-    id,
+    {
+      value: id,
+      writable: false,
+    },
   );
 
   next();
