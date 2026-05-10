@@ -104,7 +104,8 @@ export const init = ({
       ...config,
       integrations: [
         ...integrations,
-        ...(config.integrations || []),
+        ...(config.integrations || [
+        ]),
       ],
     };
 

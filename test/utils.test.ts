@@ -33,7 +33,11 @@ describe(
           'should return true if environment is in environments list',
           () => {
             const environment = 'env1';
-            const environments = [environment, 'env2', 'env3'];
+            const environments = [
+              environment,
+              'env2',
+              'env3',
+            ];
 
             expect(isEnabledEnvironment(
               environment,
@@ -46,7 +50,10 @@ describe(
           'should return false if environment is not in environments list',
           () => {
             const environment = 'env1';
-            const environments = ['env2', 'env3'];
+            const environments = [
+              'env2',
+              'env3',
+            ];
 
             expect(isEnabledEnvironment(
               environment,

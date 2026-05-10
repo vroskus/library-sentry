@@ -41,7 +41,9 @@ describe(
               environment: 'env1',
               release: '1.0.0',
             };
-            const enabledEnvironments = [config.environment];
+            const enabledEnvironments = [
+              config.environment,
+            ];
             const enabledLogOutputEnvironments = {
               [config.environment]: 'full',
             };
